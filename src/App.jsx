@@ -2,20 +2,21 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { getRandomWords } from './data/wordBank'
 import { useDeepgramSpeech } from './hooks/useDeepgramSpeech'
 import { useAudioRecorder } from './hooks/useAudioRecorder'
+import { useSounds } from './hooks/useSounds'
 import BoldCharacter from './components/BoldCharacter'
 import Obstacle from './components/Obstacle'
 import Track from './components/Track'
 import MicModal from './components/MicModal'
 import WinScreen from './components/WinScreen'
 
-const AVATAR_START = 82
-const OBSTACLE_Y = 26
-const AVATAR_STOP = OBSTACLE_Y + 12
+const AVATAR_START = 76
+const OBSTACLE_Y = 33
+const AVATAR_STOP = OBSTACLE_Y + 11
 const MOVE_SPEED = 0.7
 
-function getScale(pos) {
-  const t = (AVATAR_START - pos) / (AVATAR_START - AVATAR_STOP)
-  return 1.1 - t * 0.4
+function getCharScale(pos) {
+  const t = Math.max(0, Math.min(1, (AVATAR_START - pos) / (AVATAR_START - AVATAR_STOP)))
+  return 1.0 - t * 0.28
 }
 
 export default function App() {
@@ -42,6 +43,7 @@ export default function App() {
   useEffect(() => { currentIdxRef.current = currentIdx }, [currentIdx])
 
   const { startRecording, stopRecording, getRecordings, reset: resetRecordings, initStream } = useAudioRecorder()
+  const sfx = useSounds()
 
   const { start: startSpeech, stop: stopSpeech } = useDeepgramSpeech({
     onResult: handleSpeechResult,
@@ -53,6 +55,7 @@ export default function App() {
     setPhase('listening')
     phaseRef.current = 'listening'
     setHeardText('')
+    sfx.listen()
     const word = wordsRef.current[currentIdxRef.current]?.word
     if (word) {
       startSpeech(word)
@@ -86,6 +89,8 @@ export default function App() {
     setPhase('success')
     phaseRef.current = 'success'
     setExploding(true)
+    sfx.success()
+    sfx.explode()
 
     setTimeout(() => {
       setExploding(false)
@@ -104,6 +109,7 @@ export default function App() {
   }
 
   function onFail() {
+    sfx.fail()
     setBouncing(true)
     setTimeout(() => {
       setBouncing(false)
@@ -133,6 +139,7 @@ export default function App() {
         feedback: 'Scoring unavailable — showing estimate.',
       })))
     }
+    sfx.complete()
     setPhase('finished')
   }
 
@@ -177,6 +184,7 @@ export default function App() {
   const handleGrantMic = async () => {
     try {
       await initStream()
+      sfx.start()
       startGame()
     } catch {
       setMicError('Could not access microphone. Please allow access and try again.')
@@ -192,32 +200,40 @@ export default function App() {
 
   const currentWord = words[currentIdx]
   const progress = words.length > 0 ? (currentIdx / words.length) * 100 : 0
-  const avatarScale = getScale(avatarPos)
-  const obstacleScale = getScale(OBSTACLE_Y)
+  const avatarScale = getCharScale(avatarPos)
   const isMoving = phase === 'playing'
 
   return (
-    <div className="relative w-full max-w-[430px] h-full mx-auto overflow-hidden bg-[#080820] select-none">
+    <div className="relative w-full max-w-[430px] h-full mx-auto overflow-hidden bg-[#0d0d1f] select-none">
       <Track moving={isMoving} />
 
-      {/* HUD */}
-      <div className="absolute top-0 left-0 right-0 z-20 px-4 pt-3 pb-2"
-        style={{ background: 'linear-gradient(180deg, rgba(8,8,32,0.9) 0%, transparent 100%)' }}>
-        <div className="flex items-center gap-3">
-          <span className="text-pink-300 text-xs font-bold whitespace-nowrap tracking-wide">
-            {Math.min(currentIdx + 1, words.length)}/{words.length || 5}
-          </span>
-          <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
-            <div
-              className="h-full rounded-full transition-all duration-500"
-              style={{
-                width: `${progress}%`,
-                background: 'linear-gradient(90deg, #ec4899, #f472b6)',
-              }}
-            />
+      {/* HUD — step dots */}
+      {phase !== 'init' && phase !== 'finished' && (
+        <div className="absolute top-0 left-0 right-0 z-20 px-6 pt-5 pb-4"
+          style={{ background: 'linear-gradient(180deg, rgba(13,13,31,0.95) 0%, rgba(13,13,31,0.6) 60%, transparent 100%)' }}>
+          <div className="flex items-center justify-center gap-2.5">
+            {words.map((_, i) => (
+              <div
+                key={i}
+                className="transition-all duration-400"
+                style={{
+                  width: i === currentIdx ? 28 : 10,
+                  height: 10,
+                  borderRadius: 5,
+                  background: i < currentIdx
+                    ? 'linear-gradient(90deg, #ec4899, #f97316)'
+                    : i === currentIdx
+                    ? 'linear-gradient(90deg, #ec4899, #f97316)'
+                    : 'rgba(255,255,255,0.08)',
+                  boxShadow: i === currentIdx
+                    ? '0 0 12px rgba(236, 72, 153, 0.5)'
+                    : 'none',
+                }}
+              />
+            ))}
           </div>
         </div>
-      </div>
+      )}
 
       {/* Obstacle */}
       {phase !== 'init' && phase !== 'finished' && phase !== 'scoring' && currentWord && (
@@ -229,7 +245,6 @@ export default function App() {
             word={currentWord.word}
             emoji={currentWord.emoji}
             exploding={exploding}
-            scale={obstacleScale}
           />
         </div>
       )}
@@ -246,20 +261,27 @@ export default function App() {
 
       {/* Listening indicator */}
       {phase === 'listening' && (
-        <div className="absolute bottom-8 left-0 right-0 z-20 flex flex-col items-center gap-1.5">
+        <div className="absolute bottom-6 left-0 right-0 z-20 flex flex-col items-center gap-3">
           <div
-            className="px-5 py-1.5 rounded-full text-sm font-bold tracking-widest animate-pulse"
+            className="flex items-center gap-2.5 px-7 py-3 rounded-2xl"
             style={{
-              background: 'linear-gradient(90deg, #ec4899, #db2777)',
-              color: 'white',
-              boxShadow: '0 0 20px rgba(236, 72, 153, 0.4)',
+              background: 'linear-gradient(135deg, rgba(26,26,46,0.95) 0%, rgba(22,22,42,0.95) 100%)',
+              border: '1px solid rgba(236, 72, 153, 0.15)',
+              boxShadow: '0 0 30px rgba(236, 72, 153, 0.12), 0 8px 32px rgba(0,0,0,0.3)',
             }}
           >
-            LISTENING...
+            <span className="text-base" style={{ animation: 'mic-bounce 0.8s ease-in-out infinite' }}>🎤</span>
+            <span
+              className="text-sm font-semibold tracking-wide"
+              style={{ color: 'rgba(255,255,255,0.6)' }}
+            >
+              Say it!
+            </span>
           </div>
           {heardText && (
-            <div className="text-white/50 text-xs bg-black/40 px-3 py-1 rounded-full">
-              "{heardText}"
+            <div className="text-white/25 text-xs px-4 py-1.5 rounded-full"
+              style={{ background: 'rgba(255,255,255,0.03)' }}>
+              heard: "{heardText}"
             </div>
           )}
         </div>
@@ -267,10 +289,16 @@ export default function App() {
 
       {/* Scoring overlay */}
       {phase === 'scoring' && (
-        <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center z-40 gap-4">
+        <div className="absolute inset-0 bg-[#0d0d1f]/92 flex flex-col items-center justify-center z-40 gap-5">
           <div
-            className="text-pink-300 text-lg font-bold tracking-wider animate-pulse"
-          >
+            className="w-12 h-12 rounded-full"
+            style={{
+              background: 'linear-gradient(90deg, #ec4899, #f97316)',
+              animation: 'roll-bounce 0.6s ease-in-out infinite',
+              opacity: 0.6,
+            }}
+          />
+          <div className="text-white/50 text-sm font-semibold tracking-wide">
             {scoringStatus}
           </div>
         </div>

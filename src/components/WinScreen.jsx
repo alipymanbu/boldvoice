@@ -5,56 +5,106 @@ export default function WinScreen({ results, onRestart }) {
     : 0
 
   return (
-    <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 overflow-y-auto py-8">
-      <div
-        className="bg-gray-900 border-4 border-yellow-400 p-8 max-w-lg w-full mx-4"
-        style={{ boxShadow: '8px 8px 0px #854d0e' }}
-      >
-        <div className="flex justify-center mb-4">
-          <img
-            src="/character.jpeg"
-            alt="You!"
-            className="w-24 h-24 rounded-full border-4 border-yellow-400 object-cover pixel"
-            style={{ imageRendering: 'pixelated' }}
-          />
+    <div className="absolute inset-0 bg-[#0d0d1f] z-50 overflow-y-auto">
+      <div className="w-full max-w-[430px] mx-auto px-5 py-8">
+        <div className="flex justify-center mb-5">
+          <div className="relative">
+            <img
+              src="/character.jpeg"
+              alt="You!"
+              className="w-20 h-20 rounded-full object-cover"
+              style={{
+                border: '3px solid transparent',
+                backgroundClip: 'padding-box',
+                boxShadow: '0 0 0 3px #ec4899, 0 0 20px rgba(236, 72, 153, 0.3)',
+              }}
+            />
+          </div>
         </div>
 
-        <h2 className="text-yellow-300 text-2xl font-bold text-center mb-1 tracking-wider">
-          GAME COMPLETE!
+        <h2 className="text-white text-xl font-bold text-center mb-1">
+          Game Complete!
         </h2>
-        <p className="text-gray-300 text-center text-sm mb-6">
+        <p className="text-white/50 text-center text-sm mb-6">
           Average Score: <span className={`font-bold ${scoreColor(avgScore)}`}>{avgScore}%</span>
         </p>
 
-        <div className="space-y-2 mb-6 max-h-64 overflow-y-auto">
+        <div className="space-y-3 mb-6">
           {results.map((r, i) => {
             const s = r.score ?? 0
             return (
               <div
                 key={i}
-                className={`flex items-center justify-between px-4 py-2 border ${scoreBorder(s)}`}
+                className="rounded-2xl px-4 py-3"
+                style={{
+                  background: 'linear-gradient(135deg, #1a1a2e 0%, #16162a 100%)',
+                  border: '1px solid rgba(255,255,255,0.06)',
+                }}
               >
-                <span className="font-bold uppercase tracking-wider text-sm">
-                  {r.emoji} {r.word}
-                </span>
-                <div className="text-right text-xs">
-                  <span className={`font-bold text-sm ${scoreColor(s)}`}>{s}%</span>
-                  {r.feedback && (
-                    <div className="text-gray-400 mt-1 max-w-[180px]">{r.feedback}</div>
-                  )}
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-lg">{r.emoji}</span>
+                    <span className="text-white font-semibold text-sm uppercase tracking-wide">
+                      {r.word}
+                    </span>
+                  </div>
+                  <span className={`font-bold text-base ${scoreColor(s)}`}>{s}%</span>
                 </div>
+
+                <div className="w-full h-1.5 rounded-full bg-white/5 mb-2">
+                  <div
+                    className="h-full rounded-full transition-all duration-700"
+                    style={{
+                      width: `${s}%`,
+                      background: s >= 80
+                        ? 'linear-gradient(90deg, #22c55e, #4ade80)'
+                        : s >= 50
+                          ? 'linear-gradient(90deg, #eab308, #facc15)'
+                          : 'linear-gradient(90deg, #ef4444, #f87171)',
+                    }}
+                  />
+                </div>
+
+                {r.feedback && (
+                  <p className="text-white/35 text-xs leading-relaxed">{r.feedback}</p>
+                )}
               </div>
             )
           })}
         </div>
 
-        <button
-          onClick={onRestart}
-          className="w-full bg-yellow-400 text-black font-bold py-3 hover:bg-yellow-300 transition-colors tracking-wider"
-          style={{ boxShadow: '4px 4px 0px #78350f' }}
-        >
-          PLAY AGAIN
-        </button>
+        <div className="space-y-3">
+          <button
+            onClick={onRestart}
+            className="w-full font-bold py-3.5 rounded-2xl text-white tracking-wide transition-all active:scale-[0.97]"
+            style={{
+              background: 'linear-gradient(135deg, #1a1a2e 0%, #1e1e38 100%)',
+              border: '1px solid rgba(255,255,255,0.08)',
+            }}
+          >
+            Play Again
+          </button>
+
+          <button
+            onClick={() => {
+              const url = window.location.href
+              const text = `I scored ${avgScore}% on BoldVoice! Can you beat me? 🎤`
+              if (navigator.share) {
+                navigator.share({ title: 'BoldVoice Challenge', text, url })
+              } else {
+                navigator.clipboard.writeText(`${text}\n${url}`)
+                alert('Link copied! Share it with your friend.')
+              }
+            }}
+            className="w-full font-bold py-3.5 rounded-2xl text-white tracking-wide transition-all active:scale-[0.97]"
+            style={{
+              background: 'linear-gradient(90deg, #ec4899, #f97316)',
+              boxShadow: '0 4px 24px rgba(236, 72, 153, 0.3)',
+            }}
+          >
+            Challenge a Friend 🔥
+          </button>
+        </div>
       </div>
     </div>
   )
@@ -62,12 +112,6 @@ export default function WinScreen({ results, onRestart }) {
 
 function scoreColor(score) {
   if (score >= 80) return 'text-green-400'
-  if (score >= 50) return 'text-yellow-300'
+  if (score >= 50) return 'text-yellow-400'
   return 'text-red-400'
-}
-
-function scoreBorder(score) {
-  if (score >= 80) return 'border-green-500 bg-green-900/30 text-green-300'
-  if (score >= 50) return 'border-yellow-500 bg-yellow-900/30 text-yellow-200'
-  return 'border-red-500 bg-red-900/30 text-red-300'
 }

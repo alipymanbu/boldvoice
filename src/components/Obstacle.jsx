@@ -1,52 +1,44 @@
-export default function Obstacle({ word, emoji, exploding, scale = 1 }) {
-  const boxW = 76 * scale
-  const boxH = 84 * scale
-  const archW = boxW * 0.48
-  const archH = boxH * 0.42
-
+export default function Obstacle({ word, emoji, exploding }) {
   return (
     <div
       className={`flex flex-col items-center ${exploding ? 'obstacle-explode' : ''}`}
-      style={{ gap: 6 * scale }}
     >
-      <span
-        className="font-black tracking-widest uppercase text-white"
-        style={{
-          fontSize: 13 * scale,
-          textShadow: '0 2px 10px rgba(0,0,0,0.9)',
-        }}
-      >
-        {word}
-      </span>
-
       <div
-        className="relative flex items-start justify-center overflow-hidden"
+        className="relative flex flex-col items-center justify-center"
         style={{
-          width: boxW,
-          height: boxH,
-          background: 'linear-gradient(180deg, #dbb878 0%, #c4994c 50%, #a67c3a 100%)',
-          borderRadius: 6 * scale,
-          border: `${2.5 * scale}px solid #8B6914`,
+          width: 130,
+          height: 140,
+          background: 'linear-gradient(135deg, rgba(26,26,46,0.9) 0%, rgba(18,18,38,0.9) 100%)',
+          borderRadius: 22,
+          border: '1px solid rgba(255,255,255,0.07)',
+          backdropFilter: 'blur(8px)',
           boxShadow: `
-            inset 0 ${2 * scale}px ${4 * scale}px rgba(255,255,255,0.15),
-            inset 0 -${2 * scale}px ${4 * scale}px rgba(0,0,0,0.2),
-            0 ${4 * scale}px ${20 * scale}px rgba(0,0,0,0.5)
+            0 0 40px rgba(236, 72, 153, 0.08),
+            0 8px 32px rgba(0,0,0,0.4),
+            inset 0 1px 0 rgba(255,255,255,0.05)
           `,
+          gap: 6,
         }}
       >
-        <span style={{ fontSize: boxW * 0.42, marginTop: boxH * 0.06, position: 'relative', zIndex: 2 }}>
+        <span style={{ fontSize: 48, lineHeight: 1, marginTop: 4 }}>
           {emoji}
         </span>
 
+        <span
+          className="font-bold uppercase tracking-widest text-white"
+          style={{ fontSize: 14, opacity: 0.85 }}
+        >
+          {word}
+        </span>
+
         <div
-          className="absolute bottom-0 left-1/2"
+          className="absolute -bottom-3 left-1/2 rounded-full"
           style={{
-            width: archW,
-            height: archH,
+            width: 60,
+            height: 6,
             transform: 'translateX(-50%)',
-            background: 'radial-gradient(ellipse at center bottom, #1a1a3e 60%, #0d0d24 100%)',
-            borderRadius: `${archW / 2}px ${archW / 2}px 0 0`,
-            boxShadow: `inset 0 ${2 * scale}px ${6 * scale}px rgba(0,0,0,0.5)`,
+            background: 'radial-gradient(ellipse, rgba(236, 72, 153, 0.2) 0%, transparent 70%)',
+            filter: 'blur(2px)',
           }}
         />
       </div>

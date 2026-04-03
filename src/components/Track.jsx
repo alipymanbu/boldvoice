@@ -3,30 +3,28 @@ export default function Track({ moving }) {
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       <div
         className="absolute inset-0"
-        style={{
-          background: 'linear-gradient(180deg, #080820 0%, #0f0f3a 35%, #161650 100%)',
-        }}
+        style={{ background: '#0d0d1f' }}
       />
 
       <div
         className="absolute bottom-0 left-1/2"
         style={{
           width: '100%',
-          height: '78%',
+          height: '82%',
           transform: 'translateX(-50%)',
-          clipPath: 'polygon(36% 0%, 64% 0%, 100% 100%, 0% 100%)',
-          background: 'linear-gradient(180deg, #1a2a4a, #1e3455, #223d60)',
+          clipPath: 'polygon(34% 0%, 66% 0%, 100% 100%, 0% 100%)',
+          background: 'linear-gradient(180deg, #111128 0%, #14142e 40%, #181838 100%)',
         }}
       >
         <div
           className="absolute left-1/2 top-0 bottom-0"
           style={{
-            width: 2,
+            width: 1,
             transform: 'translateX(-50%)',
-            opacity: 0.2,
-            background: 'repeating-linear-gradient(to bottom, white 0px, white 14px, transparent 14px, transparent 32px)',
-            backgroundSize: '2px 32px',
-            animation: moving ? 'lane-scroll 0.4s linear infinite' : undefined,
+            opacity: 0.1,
+            background: 'repeating-linear-gradient(to bottom, white 0px, white 8px, transparent 8px, transparent 28px)',
+            backgroundSize: '1px 28px',
+            animation: moving ? 'lane-scroll 0.45s linear infinite' : undefined,
           }}
         />
       </div>
@@ -34,37 +32,29 @@ export default function Track({ moving }) {
       <div
         className="absolute bottom-0"
         style={{
-          height: '78%',
-          left: '0%',
-          width: '8%',
-          clipPath: 'polygon(62% 0%, 100% 0%, 100% 100%, 0% 100%)',
-          background: 'repeating-linear-gradient(to bottom, #dc2626 0px, #dc2626 18px, white 18px, white 36px)',
-          backgroundSize: '100% 36px',
-          animation: moving ? 'lane-scroll 0.4s linear infinite' : undefined,
-          opacity: 0.85,
+          height: '82%',
+          width: 2,
+          left: 'calc(17%)',
+          clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)',
+          background: 'linear-gradient(180deg, transparent 0%, rgba(236, 72, 153, 0.08) 30%, rgba(236, 72, 153, 0.25) 100%)',
         }}
       />
 
       <div
         className="absolute bottom-0"
         style={{
-          height: '78%',
-          right: '0%',
-          width: '8%',
-          clipPath: 'polygon(0% 0%, 38% 0%, 100% 100%, 0% 100%)',
-          background: 'repeating-linear-gradient(to bottom, #dc2626 0px, #dc2626 18px, white 18px, white 36px)',
-          backgroundSize: '100% 36px',
-          animation: moving ? 'lane-scroll 0.4s linear infinite' : undefined,
-          opacity: 0.85,
+          height: '82%',
+          width: 2,
+          right: 'calc(17%)',
+          background: 'linear-gradient(180deg, transparent 0%, rgba(236, 72, 153, 0.08) 30%, rgba(236, 72, 153, 0.25) 100%)',
         }}
       />
 
       <div
         className="absolute bottom-0 left-0 right-0"
         style={{
-          height: '78%',
-          background: 'linear-gradient(180deg, transparent 0%, transparent 70%, rgba(0,0,0,0.3) 100%)',
-          pointerEvents: 'none',
+          height: '25%',
+          background: 'linear-gradient(180deg, transparent 0%, rgba(13,13,31,0.5) 100%)',
         }}
       />
     </div>
