@@ -125,6 +125,33 @@ export default function App() {
     }, 600)
   }
 
+  function onSkip() {
+    stopSpeech()
+    const idx = currentIdxRef.current
+    const word = wordsRef.current[idx]
+    stopRecording(word.word)
+
+    resultsAccumRef.current.push({
+      word: word.word,
+      emoji: word.emoji,
+      transcript: '',
+      correct: false,
+    })
+
+    setExploding(false)
+    const nextIdx = idx + 1
+    if (nextIdx >= wordsRef.current.length) {
+      finishGame()
+    } else {
+      currentIdxRef.current = nextIdx
+      setCurrentIdx(nextIdx)
+      setAvatarPos(AVATAR_START)
+      avatarPosRef.current = AVATAR_START
+      setPhase('playing')
+      phaseRef.current = 'playing'
+    }
+  }
+
   async function finishGame() {
     stopSpeech()
     const finalTime = Math.round((Date.now() - startTimeRef.current) / 1000)
@@ -267,29 +294,36 @@ export default function App() {
 
       {/* Listening indicator */}
       {phase === 'listening' && (
-        <div className="absolute bottom-6 left-0 right-0 z-20 flex flex-col items-center gap-3">
-          <div
-            className="flex items-center gap-2.5 px-7 py-3 rounded-2xl"
-            style={{
-              background: 'linear-gradient(135deg, rgba(26,26,46,0.95) 0%, rgba(22,22,42,0.95) 100%)',
-              border: '1px solid rgba(236, 72, 153, 0.15)',
-              boxShadow: '0 0 30px rgba(236, 72, 153, 0.12), 0 8px 32px rgba(0,0,0,0.3)',
-            }}
-          >
-            <span className="text-base" style={{ animation: 'mic-bounce 0.8s ease-in-out infinite' }}>🎤</span>
-            <span
-              className="text-sm font-semibold tracking-wide"
-              style={{ color: 'rgba(255,255,255,0.6)' }}
-            >
-              Say it!
-            </span>
-          </div>
+        <div className="absolute bottom-6 left-0 right-0 z-20 flex flex-col items-center gap-2.5 px-10">
           {heardText && (
-            <div className="text-white/25 text-xs px-4 py-1.5 rounded-full"
+            <div className="text-white/25 text-xs px-4 py-1.5 rounded-full mb-0.5"
               style={{ background: 'rgba(255,255,255,0.03)' }}>
               heard: "{heardText}"
             </div>
           )}
+          <div
+            className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl transition-all"
+            style={{
+              background: 'linear-gradient(90deg, #ec4899, #f97316)',
+              boxShadow: '0 4px 24px rgba(236, 72, 153, 0.3)',
+            }}
+          >
+            <span className="text-base" style={{ animation: 'mic-bounce 0.8s ease-in-out infinite' }}>🎤</span>
+            <span className="text-white text-sm font-bold tracking-wide">
+              Listening...
+            </span>
+          </div>
+          <button
+            onClick={onSkip}
+            className="w-full py-2.5 rounded-2xl text-xs font-semibold tracking-wide transition-all active:scale-[0.97]"
+            style={{
+              background: 'linear-gradient(135deg, rgba(26,26,46,0.95) 0%, rgba(22,22,42,0.95) 100%)',
+              border: '1px solid rgba(255,255,255,0.06)',
+              color: 'rgba(255,255,255,0.3)',
+            }}
+          >
+            Skip this word
+          </button>
         </div>
       )}
 
