@@ -30,6 +30,7 @@ export default function App() {
   const [heardText, setHeardText] = useState('')
   const [results, setResults] = useState([])
   const [scoringStatus, setScoringStatus] = useState('')
+  const [elapsedTime, setElapsedTime] = useState(0)
 
   const phaseRef = useRef('init')
   const avatarPosRef = useRef(AVATAR_START)
@@ -37,6 +38,7 @@ export default function App() {
   const currentIdxRef = useRef(0)
   const animFrameRef = useRef(null)
   const resultsAccumRef = useRef([])
+  const startTimeRef = useRef(null)
 
   useEffect(() => { phaseRef.current = phase }, [phase])
   useEffect(() => { wordsRef.current = words }, [words])
@@ -125,6 +127,8 @@ export default function App() {
 
   async function finishGame() {
     stopSpeech()
+    const finalTime = Math.round((Date.now() - startTimeRef.current) / 1000)
+    setElapsedTime(finalTime)
     setPhase('scoring')
     setScoringStatus('Analyzing your pronunciation...')
     const recordings = getRecordings()
@@ -177,6 +181,8 @@ export default function App() {
     setAvatarPos(AVATAR_START)
     setResults([])
     setHeardText('')
+    setElapsedTime(0)
+    startTimeRef.current = Date.now()
     setPhase('playing')
     phaseRef.current = 'playing'
   }, [resetRecordings])
@@ -308,7 +314,7 @@ export default function App() {
         <MicModal onGrant={handleGrantMic} onDeny={() => setMicError('Mic denied.')} error={micError} />
       )}
       {phase === 'finished' && (
-        <WinScreen results={results} onRestart={handleRestart} />
+        <WinScreen results={results} onRestart={handleRestart} elapsedTime={elapsedTime} />
       )}
     </div>
   )

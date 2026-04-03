@@ -1,8 +1,12 @@
-export default function WinScreen({ results, onRestart }) {
+export default function WinScreen({ results, onRestart, elapsedTime = 0 }) {
   const total = results.length
   const avgScore = total > 0
     ? Math.round(results.reduce((sum, r) => sum + (r.score ?? 0), 0) / total)
     : 0
+
+  const mins = Math.floor(elapsedTime / 60)
+  const secs = elapsedTime % 60
+  const timeStr = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`
 
   return (
     <div className="absolute inset-0 bg-[#0d0d1f] z-50 overflow-y-auto">
@@ -22,12 +26,26 @@ export default function WinScreen({ results, onRestart }) {
           </div>
         </div>
 
-        <h2 className="text-white text-xl font-bold text-center mb-1">
+        <h2 className="text-white text-xl font-bold text-center mb-3">
           Game Complete!
         </h2>
-        <p className="text-white/50 text-center text-sm mb-6">
-          Average Score: <span className={`font-bold ${scoreColor(avgScore)}`}>{avgScore}%</span>
-        </p>
+
+        <div className="flex items-center justify-center gap-6 mb-6">
+          <div className="flex flex-col items-center">
+            <span className={`text-2xl font-bold ${scoreColor(avgScore)}`}>{avgScore}%</span>
+            <span className="text-white/30 text-xs mt-0.5">Accuracy</span>
+          </div>
+          <div
+            className="w-px h-8"
+            style={{ background: 'rgba(255,255,255,0.08)' }}
+          />
+          <div className="flex flex-col items-center">
+            <span className="text-2xl font-bold text-white/80">
+              {timeStr}
+            </span>
+            <span className="text-white/30 text-xs mt-0.5">Time</span>
+          </div>
+        </div>
 
         <div className="space-y-3 mb-6">
           {results.map((r, i) => {
@@ -88,7 +106,7 @@ export default function WinScreen({ results, onRestart }) {
           <button
             onClick={() => {
               const url = window.location.href
-              const text = `I scored ${avgScore}% on BoldVoice! Can you beat me? 🎤`
+              const text = `I scored ${avgScore}% in ${timeStr} on BoldVoice! Can you beat me? 🎤⏱️`
               if (navigator.share) {
                 navigator.share({ title: 'BoldVoice Challenge', text, url })
               } else {
